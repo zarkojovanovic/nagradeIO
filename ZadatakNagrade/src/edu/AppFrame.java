@@ -38,9 +38,9 @@ public class AppFrame extends JFrame {
 	private JButton btnMail;
 	private JButton btnPodeli;
 	private int preostaloNagrada = 0;
-	private Stack<Osoba> kandidati = new Stack<Osoba>();
-	private PrintWriter izlaz = null;;
-	private BufferedReader ulaz = null;
+	private Stack<Osoba> kandidati = new Stack<Osoba>(); // Kandidati za nagrade ce se dodavati na ovaj stek.
+	private PrintWriter izlaz = null;;                   // Klasa PrintWriter sluzi za ispis dobitnika na fajl.
+	private BufferedReader ulaz = null;				     // Klasa BufferedReader sluzi za citanje podataka sa fajla.
 	
 	/**
 	 * Launch the application.
@@ -64,22 +64,28 @@ public class AppFrame extends JFrame {
 	 */
 	public AppFrame() {
 		
-		try {
-			ulaz = new BufferedReader(new FileReader("src/nagrade.txt"));
-			preostaloNagrada = Integer.parseInt(ulaz.readLine());
+		/* Napomena:
+		 * Svako citanje sa fajla i pisanje u fajl moze da izbaci exception tipa IOException koji mora biti obradjen.
+		 *  */
+		try {               																		
+																									
+		ulaz = new BufferedReader(new FileReader("src/nagrade.txt"));        // Na promenljivu ulaz smesta se tok bajtova prema fajlu. Putanja ka fajlu mora da se poklopi.                   
+			preostaloNagrada = Integer.parseInt(ulaz.readLine());			 //Iscitava se koliki je broj nagrada sa fajla nagade.txt i smesta u promenljivu.
+			ulaz.close();                                                    //Potrebno je zatvoriti ulaz. 
 		} catch (FileNotFoundException e) {
 			System.out.println("Fajl nagrade nije pronadjen!");
 			System.exit(1);
 		} catch (IOException e) {
 			e.printStackTrace();
+			
 		}
 		
 		try {
-			izlaz = new PrintWriter(new FileWriter("src/dobitnici.txt"));
+			izlaz = new PrintWriter(new FileWriter("src/dobitnici.txt"));	//Uspostavljanje toka bajtova ka fajlu za ispis.				
 		} catch (IOException e) {
 			System.out.println("Neuspela operacija pripreme za upis u fajl dobitnici.txt");
 			System.exit(1);
-		}
+		}																						
 	
 		
 		setTitle("Nagrade");
@@ -132,11 +138,13 @@ public class AppFrame extends JFrame {
 		pnlPodaci.add(pnlMail);
 		
 		 btnMail = new JButton("Stigao Mail");
-		btnMail.addActionListener(new ActionListener() {
+		 btnMail.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
 					String ime = txtIme.getText();
 					String prezime = txtPrezime.getText();
+					
+					//Validacija
 					if(ime.equals("") || prezime.equals("")) {
 						JOptionPane.showMessageDialog(contentPane,"Popuniti oba polja!","Alert",JOptionPane.WARNING_MESSAGE);
 						txtIme.setText("");
@@ -144,6 +152,7 @@ public class AppFrame extends JFrame {
 						chbxNagrada.setSelected(false);
 						return;
 				    }
+					//ako je checkBox selektovan na stek se dodaje novi objekat osoba sa imenom i prezimenom.
 					if (chbxNagrada.isSelected()) {
 				    	kandidati.push(new Osoba(ime, prezime));
 						
@@ -169,12 +178,15 @@ public class AppFrame extends JFrame {
 				if(preostaloNagrada == 0) {
 					btnPodeli.setEnabled(false);
 					txtDobitnik.setText("Nema vise Nagrada!");
+					
+					//Ako nema vise nagrada na izlaz se pisu preostali kandidati sa steka 
 					izlaz.println("\n\nNisu dobili nagrade");
 					
 					while(!kandidati.isEmpty()) {
 						izlaz.println(kandidati.pop().toString());
-						izlaz.close();
+						izlaz.close();				//potrebno je zatvoriti izlaz.				
 					}
+				//Ako ima jos kandidata i nagrada upisati dobitnika u fajl dobitnici.txt	
 				} else if (!kandidati.isEmpty()) {
 					preostaloNagrada--;
 					txtPreostalo.setText(preostaloNagrada + "");
